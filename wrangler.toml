@@ -20,14 +20,13 @@ new_classes = ["RateLimiter"]
 # KV Namespace for OTPs and sessions
 [[kv_namespaces]]
 binding = "KV"
-id = "mock-kv-id-for-dev" # Wrangler dev will use local mock
-preview_id = "mock-kv-preview-for-dev"
+id = "9ab7e56be47340f4a4e7aac22091a268"
 
 # D1 Database for persistent data
 [[d1_databases]]
 binding = "DB"
 database_name = "tec-ec-election-db"
-database_id = "mock-d1-id-for-dev" # Wrangler dev will use local mock
+database_id = "eaff7896-8279-4f7d-8551-1647d03c7102"
 
 [vars]
 # Environment variables
