@@ -9,7 +9,7 @@ export function renderAdminLogin() {
       <div id="login-error" class="error"></div>
       <div id="login-step-1">
         <label>Email Address</label>
-        <input type="email" id="admin-email" placeholder="admin@example.com" />
+        <input type="email" id="admin-email" placeholder="admin@example.com" value="tecouncil.org@gmail.com" />
         <button onclick="requestAdminOTP()">Send OTP</button>
       </div>
       <div id="login-step-2" style="display:none;">
