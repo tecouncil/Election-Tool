@@ -20,13 +20,13 @@ new_sqlite_classes = ["RateLimiter"]
 # KV Namespace for OTPs and sessions
 [[kv_namespaces]]
 binding = "KV"
-id = "9ab7e56be47340f4a4e7aac22091a268"
+id = "c2328df4621c4d1f8eab670ca249c26c"
 
 # D1 Database for persistent data
 [[d1_databases]]
 binding = "DB"
 database_name = "tec-ec-election-db"
-database_id = "eaff7896-8279-4f7d-8551-1647d03c7102"
+database_id = "06e0a639-2da4-40e3-ab13-f16a61ceaab9"
 
 [vars]
 # Environment variables
