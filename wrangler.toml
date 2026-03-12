@@ -3,6 +3,10 @@ main = "src/index.ts"
 compatibility_date = "2024-04-01"
 compatibility_flags = ["nodejs_compat"]
 
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["RateLimiter"]
+
 # Serve static assets for the frontend
 [assets]
 directory = "public"
@@ -16,12 +20,13 @@ class_name = "RateLimiter"
 # KV Namespace for OTPs and sessions
 [[kv_namespaces]]
 binding = "KV"
-id = "c2328df4621c4d1f8eab670ca249c26c"
+id = "8f1415e18d6444989ed371aee7f4c12a1"
 
 # D1 Database for persistent data
 [[d1_databases]]
 binding = "DB"
 database_name = "tec-ec-election-db"
+database_id = "eaff7896-8279-4f7d-8551-1647d03c7102"
 
 [vars]
 # Environment variables
