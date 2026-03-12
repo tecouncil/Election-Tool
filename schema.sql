@@ -4,7 +4,6 @@ DROP TABLE IF EXISTS audit_log;
 DROP TABLE IF EXISTS ballot_selections;
 DROP TABLE IF EXISTS ballots;
 DROP TABLE IF EXISTS voter_participation;
-DROP TABLE IF EXISTS voter_roll;
 DROP TABLE IF EXISTS candidates;
 DROP TABLE IF EXISTS elections;
 
@@ -25,13 +24,6 @@ CREATE TABLE candidates (
     name TEXT NOT NULL,
     description TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE voter_roll (
-    email TEXT NOT NULL,
-    election_id TEXT NOT NULL REFERENCES elections(id),
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY(email, election_id)
 );
 
 CREATE TABLE voter_participation (

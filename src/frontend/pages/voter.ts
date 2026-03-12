@@ -8,7 +8,7 @@ export function renderVoterLogin(params: string[]) {
   app.innerHTML = `
     <div class="card" style="max-width: 400px; margin: 4rem auto;">
       <h2>Voter Login</h2>
-      <p class="text-muted text-sm">You must enter the email address authorized for this election.</p>
+      <p class="text-muted text-sm">Enter your email address to receive a verification code and cast your vote.</p>
       <div id="login-error" class="error"></div>
       <div id="login-step-1">
         <label>Email Address</label>

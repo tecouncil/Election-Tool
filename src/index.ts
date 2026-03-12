@@ -8,12 +8,12 @@ export interface Env {
   ADMIN_EMAIL?: string;
   RESEND_API_KEY?: string;
   RESEND_FROM_EMAIL?: string;
+  ASSETS?: { fetch: typeof fetch };
 }
 
 import { authRouter } from './api/auth';
 import { electionsRouter } from './api/elections';
 import { candidatesRouter } from './api/candidates';
-import { votersRouter } from './api/voters';
 import { ballotsRouter } from './api/ballots';
 import { auditRouter } from './api/audit';
 import { verifyRouter } from './api/verify';
@@ -28,25 +28,59 @@ router.all('*', preflight);
 router.get('/api/health', () => json({ status: 'ok' }));
 
 // Mount sub-routers
-router.all('/api/auth/*', authRouter.handle);
-router.all('/api/elections/:id/candidates/*', candidatesRouter.handle);
-router.all('/api/elections/:id/voters/*', votersRouter.handle);
-router.all('/api/elections/:id/*', ballotsRouter.handle);
-router.all('/api/elections/*', electionsRouter.handle);
-router.all('/api/audit/*', auditRouter.handle);
-router.all('/api/verify/*', verifyRouter.handle);
-
-// 404 handler
-router.all('*', () => error(404, 'Not Found'));
+router.all('/api/auth/*', (req, env, ctx) => {
+  console.log('[Routing] Passing to authRouter...');
+  return authRouter.fetch(req, env, ctx).catch((err: any) => {
+    console.error('[Routing] authRouter threw error:', err);
+    throw err;
+  });
+});
+router.all('/api/elections/:id/candidates/*', (req, env, ctx) => candidatesRouter.fetch(req, env, ctx));
+router.all('/api/elections/:id/*', (req, env, ctx) => ballotsRouter.fetch(req, env, ctx));
+router.all('/api/elections/*', (req, env, ctx) => electionsRouter.fetch(req, env, ctx));
+router.all('/api/audit/*', (req, env, ctx) => auditRouter.fetch(req, env, ctx));
+router.all('/api/verify/*', (req, env, ctx) => verifyRouter.fetch(req, env, ctx));
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-    return router.handle(request, env, ctx)
-      .then(corsify)
-      .catch((err: any) => {
-        console.error('Unhandled error', err);
-        return corsify(error(500, err instanceof Error ? err.message : 'Internal Server Error'));
-      });
+    console.log(`[Fetch Start] ${request.method} ${request.url}`);
+    
+    // Binding Health Check
+    try {
+      console.log('[Startup Check] KV:', !!env.KV);
+      console.log('[Startup Check] DB:', !!env.DB);
+      console.log('[Startup Check] ASSETS:', !!env.ASSETS);
+      console.log('[Startup Check] ADMIN_EMAIL:', !!env.ADMIN_EMAIL);
+      console.log('[Startup Check] RATE_LIMITER:', !!env.RATE_LIMITER);
+    } catch (e) {
+      console.error('[CRITICAL BINDING ERROR]', e);
+    }
+    
+    try {
+      // Try to handle API/Routing
+      console.log('[Fetch] Before router.fetch');
+      let response = await router.fetch(request, env, ctx);
+      console.log('[Fetch] After router.fetch:', !!response);
+
+      // If no response from router, fallback to assets
+      if (!response) {
+        if (env.ASSETS) {
+          console.log('[Asset Fallback] Fetching from ASSETS...');
+          response = await env.ASSETS.fetch(request);
+        } else {
+          console.log('[Routing Fallback] No router match and no ASSETS binding');
+          response = error(404, 'Not Found');
+        }
+      }
+
+      console.log(`[Response Success] status: ${response.status}`);
+      return corsify(response);
+
+    } catch (err: any) {
+      console.error('[CRITICAL FETCH ERROR]', err.stack || err.message || err);
+      const errRes = error(500, `Internal Server Error: ${err.message || 'unknown'}`);
+      return corsify(errRes);
+    }
   },
 
   async scheduled(controller: ScheduledController, env: Env, ctx: ExecutionContext) {
@@ -71,26 +105,29 @@ export class RateLimiter {
   }
 
   async fetch(request: Request) {
-    // Basic rate limiter: max 5 requests per 15 mins per email
+    console.log(`[RateLimiter DO] fetch: ${request.url}`);
     const url = new URL(request.url);
     const email = url.searchParams.get('email');
     if (!email) return new Response('Missing email', { status: 400 });
 
     const key = `attempts:${email}`;
-    // We can store an array of timestamps in DO storage
+    const now = Date.now();
+    
+    // Use the DO storage to get attempts
     let attempts = await this.state.storage.get<number[]>(key) || [];
     
-    // Filter attempts within the last 15 minutes (900000 ms)
-    const now = Date.now();
+    // Filter attempts within the last 15 minutes
     attempts = attempts.filter(ts => ts > now - 900000);
     
     if (attempts.length >= 5) {
+      console.log(`[RateLimiter DO] Rate limited for ${email}`);
       return new Response('Rate limited', { status: 429 });
     }
 
     attempts.push(now);
     await this.state.storage.put(key, attempts);
-
+    
+    console.log(`[RateLimiter DO] OK for ${email} (${attempts.length} attempts)`);
     return new Response('OK', { status: 200 });
   }
 }

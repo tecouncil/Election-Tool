@@ -17,12 +17,6 @@ export interface Candidate {
   created_at: string;
 }
 
-export interface VoterRoll {
-  email: string;
-  election_id: string;
-  created_at: string;
-}
-
 export interface VoterParticipation {
   email: string;
   election_id: string;

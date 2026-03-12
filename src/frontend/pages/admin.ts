@@ -116,17 +116,16 @@ export async function renderAdminElectionEdit(params: string[]) {
   app.innerHTML = `<div>Loading...</div>`;
 
   try {
-    const [electionData, candidatesData, votersData] = await Promise.all([
+    const [electionData, candidatesData] = await Promise.all([
       apiFetch(`/elections/${electionId}`),
-      apiFetch(`/elections/${electionId}/candidates`),
-      apiFetch(`/elections/${electionId}/voters`)
+      apiFetch(`/elections/${electionId}/candidates`)
     ]);
 
     const election = electionData.election;
     const candidates = candidatesData.candidates;
-    const roll = votersData.roll;
 
     const isDraft = election.status === 'draft';
+    const shareLink = window.location.origin + '/vote/' + election.id;
 
     app.innerHTML = `
       <button onclick="navigate('/admin')" style="background:var(--text-muted);margin-bottom:1rem;">&larr; Back to Dashboard</button>
@@ -142,6 +141,15 @@ export async function renderAdminElectionEdit(params: string[]) {
         ${election.status === 'closed' ? `
           <button class="mt-2" onclick="finalizeElection('${election.id}')" style="background:var(--success)">Finalize Results</button>
         ` : ''}
+      </div>
+
+      <div class="card">
+        <h3>Share Election</h3>
+        <p class="text-sm text-muted mb-2">Share this link with voters to allow them to participate.</p>
+        <div class="flex gap-2" style="display:flex; gap:0.5rem; align-items:center;">
+          <input type="text" id="share-link" value="${shareLink}" readonly style="flex:1; background:#f3f4f6; color:#555;" />
+          <button onclick="copyShareLink()">Copy</button>
+        </div>
       </div>
 
       <div class="card">
@@ -169,28 +177,19 @@ export async function renderAdminElectionEdit(params: string[]) {
             `).join('')}
           </ul>
         </div>
-        <div class="card" style="flex:1;">
-          <h3>Voter Roll (${roll.length})</h3>
-          ${isDraft ? `
-            <div class="flex gap-2">
-              <input type="email" id="new-voter" placeholder="voter@example.com" />
-              <button onclick="addVoter('${election.id}')">Add</button>
-            </div>
-            <p class="text-muted mt-2">Bulk Import (Emails on new lines)</p>
-            <textarea id="bulk-voter" rows="4"></textarea>
-            <button onclick="importVoters('${election.id}')">Import</button>
-          ` : ''}
-          <ul style="padding-left:0;list-style:none;max-height:300px;overflow-y:auto;" class="mt-4">
-            ${roll.map((v: any) => `
-              <li class="flex justify-between mt-2">
-                <span>${v.email}</span>
-                ${isDraft ? `<button style="background:var(--danger);padding:0.2rem 0.5rem;" onclick="removeVoter('${election.id}', '${encodeURIComponent(v.email)}')">X</button>` : ''}
-              </li>
-            `).join('')}
-          </ul>
-        </div>
       </div>
     `;
+
+    (window as any).copyShareLink = () => {
+      const input = document.getElementById('share-link') as HTMLInputElement;
+      input.select();
+      input.setSelectionRange(0, 99999);
+      navigator.clipboard.writeText(input.value).then(() => {
+        alert('Copied to clipboard');
+      }).catch(() => {
+        alert('Failed to copy');
+      });
+    };
 
     // Bind UI actions
     if (isDraft) {
@@ -209,24 +208,8 @@ export async function renderAdminElectionEdit(params: string[]) {
         await apiFetch(`/elections/${id}/candidates/${cid}`, { method: 'DELETE' });
         renderAdminElectionEdit([id]);
       };
-      (window as any).addVoter = async (id: string) => {
-        const email = (document.getElementById('new-voter') as HTMLInputElement).value;
-        if (!email) return;
-        await apiFetch(`/elections/${id}/voters`, { method: 'POST', body: JSON.stringify({ email }) }).catch(e => alert(e.message));
-        renderAdminElectionEdit([id]);
-      };
-      (window as any).importVoters = async (id: string) => {
-        const text = (document.getElementById('bulk-voter') as HTMLTextAreaElement).value;
-        if (!text) return;
-        await apiFetch(`/elections/${id}/voters/import`, { method: 'POST', body: text }).catch(e => alert(e.message));
-        renderAdminElectionEdit([id]);
-      };
-      (window as any).removeVoter = async (id: string, email: string) => {
-        await apiFetch(`/elections/${id}/voters/${email}`, { method: 'DELETE' });
-        renderAdminElectionEdit([id]);
-      };
       (window as any).openElection = async (id: string) => {
-        if(confirm('Are you sure you want to open this election? No more changes to candidates or voters can be made.')) {
+        if(confirm('Are you sure you want to open this election? No more changes to candidates can be made.')) {
           await apiFetch(`/elections/${id}/open`, { method: 'POST' }).catch(e => alert(e.message));
           renderAdminElectionEdit([id]);
         }

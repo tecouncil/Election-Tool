@@ -5,74 +5,111 @@ import { DBWrapper } from '../db';
 
 export const authRouter = Router<IRequest, [Env, ExecutionContext]>({ base: '/api/auth' });
 
-// POST /api/auth/otp/request
 authRouter.post('/otp/request', async (req, env) => {
-  const body = await req.json().catch(() => ({}));
-  const email = (body as any).email?.toLowerCase().trim();
-  const electionId = (body as any).electionId; // optional if admin login?
-  const isAdminLogin = (body as any).isAdminLogin === true;
-
-  if (!email) {
-    return error(400, 'Email required');
-  }
-
-  // Rate Limiting check via DO
-  const id = env.RATE_LIMITER.idFromName(email);
-  const limiter = env.RATE_LIMITER.get(id);
-  const rateLimitReq = new Request(`http://do/?email=${encodeURIComponent(email)}`);
-  const rateLimitRes = await limiter.fetch(rateLimitReq);
-  
-  if (rateLimitRes.status === 429) {
-    return error(429, 'Too many OTP requests. Try again in 15 minutes.');
-  }
-
-  // Lockout check (5 failed attempts) lockout key in KV
-  const lockoutKey = `lockout:${email}`;
-  const isLockedOut = await env.KV.get(lockoutKey);
-  if (isLockedOut) {
-    return error(429, 'Account temporarily locked out due to too many failed attempts.');
-  }
-
-  let role = 'voter';
-
-  if (isAdminLogin) {
-    if (env.ADMIN_EMAIL && email !== env.ADMIN_EMAIL.toLowerCase()) {
-      return error(403, 'Unauthorized'); // Do not leak if admin or not
-    }
-    role = 'admin';
-  } else {
-    // Voter login - check if voter is on roll OR election is open?
-    // User requested: "Anyone with the link can enter their email to request an OTP and log in to vote"
-    // So we don't necessarily PRE-check voter roll, but wait!
-    // "Instead of the admin pre-adding voters to a voter roll before opening... Anyone with the link can enter their email... to request OTP and log in to vote"
-    // This implies Open Voter Access. We just accept the email, but we need an electionId.
-    if (!electionId) return error(400, 'Election ID required for voter login');
-    
-    const db = new DBWrapper(env.DB);
-    const election = await db.getElection(electionId);
-    
-    if (!election || election.status !== 'open') {
-      return error(400, 'Election is not open');
+  console.log('[OTP Request] Starting handler');
+  try {
+    let body: any = {};
+    try {
+      const text = await req.text();
+      console.log('[OTP Request] Raw body text:', text);
+      body = text ? JSON.parse(text) : {};
+    } catch (e) {
+      console.error('[OTP Request] Failed to parse body:', e);
     }
     
-    // Check if already voted? (Optional, but good UX to tell them early or just let them login and see a "you already voted" page)
+    const email = body.email?.toLowerCase().trim();
+    const electionId = body.electionId;
+    const isAdminLogin = body.isAdminLogin === true;
+    console.log(`[OTP Request] email: ${email}, isAdmin: ${isAdminLogin}`);
+
+    if (!email) {
+      return error(400, 'Email required');
+    }
+
+    // Basic rate limiting via KV (max 5 requests per 15 mins)
+    const rateLimitKey = `rl:${email}`;
+    console.log('[OTP Request] Fetching rate limit from KV...');
+    const rateLimitVal = await env.KV.get(rateLimitKey);
+    console.log('[OTP Request] Rate limit value:', rateLimitVal);
+    
+    let rateLimitData = rateLimitVal ? JSON.parse(rateLimitVal) : { count: 0, firstAttempt: Date.now() };
+    const now = Date.now();
+    if (now - rateLimitData.firstAttempt > 900000) {
+      rateLimitData = { count: 1, firstAttempt: now };
+    } else {
+      rateLimitData.count++;
+    }
+    
+    if (rateLimitData.count > 5) {
+      return error(429, 'Too many OTP requests. Try again in 15 minutes.');
+    }
+    console.log('[OTP Request] Updating rate limit in KV...');
+    await env.KV.put(rateLimitKey, JSON.stringify(rateLimitData), { expirationTtl: 900 });
+
+    // Lockout check (5 failed attempts) lockout key in KV
+    const lockoutKey = `lockout:${email}`;
+    console.log('[OTP Request] Checking lockout in KV...');
+    const isLockedOut = await env.KV.get(lockoutKey);
+    console.log('[OTP Request] Lockout status:', isLockedOut);
+    if (isLockedOut) {
+      return error(429, 'Account temporarily locked out due to too many failed attempts.');
+    }
+
+    let role = 'voter';
+
+    if (isAdminLogin) {
+      if (env.ADMIN_EMAIL && email !== env.ADMIN_EMAIL.toLowerCase()) {
+        console.log('[OTP Request] Admin email mismatch');
+        return error(403, 'Unauthorized'); 
+      }
+      role = 'admin';
+    } else {
+      if (!electionId) {
+        console.log('[OTP Request] Missing electionId for voter');
+        return error(400, 'Election ID required for voter login');
+      }
+      
+      console.log('[OTP Request] DBWrapper init for electionId:', electionId);
+      const db = new DBWrapper(env.DB);
+      console.log('[OTP Request] Fetching election status...');
+      const election = await db.getElection(electionId);
+      console.log('[OTP Request] Election result:', !!election);
+      
+      if (!election || election.status !== 'open') {
+        return error(400, 'Election is not open');
+      }
+    }
+
+    const otp = generateOTP();
+    const otpKey = isAdminLogin ? `otp:admin:${email}` : `otp:${electionId}:${email}`;
+    console.log('[OTP Request] Storing OTP in KV with key:', otpKey);
+
+    await env.KV.put(otpKey, otp, { expirationTtl: 600 });
+    console.log('[OTP Request] OTP stored');
+    await env.KV.put(`attempts_count:${otpKey}`, '0', { expirationTtl: 600 });
+    console.log('[OTP Request] attempts_count stored');
+
+    // Send Email
+    console.log('[OTP Request] Preparing email...');
+    const title = isAdminLogin ? 'Admin Login' : 'Voter Login';
+    try {
+      console.log('[OTP Request] Calling sendEmail utility...');
+      await sendEmail(env, email, `${title} Verification Code`, `
+        <p>Your verification code is: <strong>${otp}</strong></p>
+        <p>This code expires in 10 minutes.</p>
+      `);
+      console.log('[OTP Request] Email utility returned success');
+    } catch (emailErr: any) {
+      console.error('[OTP Request] Email utility threw error:', emailErr.stack || emailErr.message);
+      throw emailErr;
+    }
+
+    console.log('[OTP Request] Success returning json');
+    return json({ success: true, message: 'OTP sent' });
+  } catch (err: any) {
+    console.error('[OTP Request] CRITICAL HANDLER ERROR:', err.stack || err.message || err);
+    return error(500, `Internal Error in OTP Request: ${err.message}`);
   }
-
-  const otp = generateOTP();
-  const otpKey = isAdminLogin ? `otp:admin:${email}` : `otp:${electionId}:${email}`;
-
-  // Store OTP in KV with 10 min TTL
-  await env.KV.put(otpKey, otp, { expirationTtl: 600 });
-  await env.KV.put(`attempts_count:${otpKey}`, '0', { expirationTtl: 600 }); // track failed attempts
-
-  // Send Email
-  const title = isAdminLogin ? 'Admin Login' : 'Voter Login';
-  await sendEmail(env, email, `${title} Verification Code`, `
-    <p>Your verification code is: <strong>${otp}</strong></p>
-    <p>This code expires in 10 minutes.</p>
-  `);
-
-  return json({ success: true, message: 'OTP sent' });
 });
 
 // POST /api/auth/otp/verify

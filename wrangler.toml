@@ -1,6 +1,6 @@
-name = "tec-ec-election"
+name = "tecelect"
 main = "src/index.ts"
-compatibility_date = "2024-03-20"
+compatibility_date = "2024-04-01"
 compatibility_flags = ["nodejs_compat"]
 
 # Serve static assets for the frontend
@@ -13,10 +13,6 @@ binding = "ASSETS"
 name = "RATE_LIMITER"
 class_name = "RateLimiter"
 
-[[migrations]]
-tag = "v1"
-new_sqlite_classes = ["RateLimiter"]
-
 # KV Namespace for OTPs and sessions
 [[kv_namespaces]]
 binding = "KV"
@@ -26,7 +22,6 @@ id = "c2328df4621c4d1f8eab670ca249c26c"
 [[d1_databases]]
 binding = "DB"
 database_name = "tec-ec-election-db"
-database_id = "06e0a639-2da4-40e3-ab13-f16a61ceaab9"
 
 [vars]
 # Environment variables

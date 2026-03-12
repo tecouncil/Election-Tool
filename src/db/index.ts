@@ -1,7 +1,6 @@
 import {
   Election,
   Candidate,
-  VoterRoll,
   VoterParticipation,
   Ballot,
   BallotSelection,
@@ -28,16 +27,6 @@ export class DBWrapper {
   async getCandidates(electionId: string): Promise<Candidate[]> {
     const res = await this.db.prepare('SELECT * FROM candidates WHERE election_id = ?').bind(electionId).all<Candidate>();
     return res.results;
-  }
-
-  async getVoterRoll(electionId: string): Promise<VoterRoll[]> {
-    const res = await this.db.prepare('SELECT * FROM voter_roll WHERE election_id = ?').bind(electionId).all<VoterRoll>();
-    return res.results;
-  }
-
-  async isVoterOnRoll(email: string, electionId: string): Promise<boolean> {
-    const res = await this.db.prepare('SELECT 1 FROM voter_roll WHERE email = ? AND election_id = ?').bind(email, electionId).first();
-    return !!res;
   }
 
   async hasVoted(email: string, electionId: string): Promise<boolean> {
