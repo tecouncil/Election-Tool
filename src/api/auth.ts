@@ -2,6 +2,7 @@ import { IRequest, Router, error, json } from 'itty-router';
 import { Env } from '../index';
 import { generateOTP, sendEmail } from '../utils/email';
 import { DBWrapper } from '../db';
+import { formatDateIST } from '../utils/datetime';
 
 export const authRouter = Router<IRequest, [Env, ExecutionContext]>({ base: '/api/auth' });
 
@@ -96,7 +97,7 @@ authRouter.post('/otp/request', async (req, env) => {
       console.log('[OTP Request] Calling sendEmail utility...');
       await sendEmail(env, email, `${title} Verification Code`, `
         <p>Your verification code is: <strong>${otp}</strong></p>
-        <p>This code expires in 10 minutes.</p>
+        <p>This code expires in 10 minutes (at ${formatDateIST(new Date(Date.now() + 600000).toISOString())} IST).</p>
       `);
       console.log('[OTP Request] Email utility returned success');
     } catch (emailErr: any) {

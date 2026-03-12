@@ -4,6 +4,7 @@ import { AuthenticatedRequest, requireVoter } from './middleware';
 import { DBWrapper } from '../db';
 import { computeBallotHash } from '../utils/crypto';
 import { sendEmail } from '../utils/email';
+import { formatDateIST } from '../utils/datetime';
 
 export const ballotsRouter = Router<AuthenticatedRequest, [Env, ExecutionContext]>({ base: '/api/elections/:id' });
 
@@ -79,7 +80,7 @@ ballotsRouter.post('/ballots', requireVoter, async (req, env, ctx) => {
     <p>You can view, download, or copy your full receipt (including your choices) on the election website confirmation page that is currently open in your browser.</p>
     <hr />
     <p><strong>Ballot Hash:</strong> ${ballotHash}</p>
-    <p><strong>Timestamp:</strong> ${timestamp}</p>
+    <p><strong>Timestamp:</strong> ${formatDateIST(timestamp)} (IST)</p>
     <p><em>Save this information for your records. The ballot hash allows you to verify that your vote is included in the final tally without revealing your identity.</em></p>
   `;
 
