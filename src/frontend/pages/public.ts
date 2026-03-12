@@ -9,32 +9,74 @@ export async function renderResults(params: string[]) {
   try {
     const data = await apiFetch(`/elections/${electionId}/results`);
     const election = data.election;
-    const results = data.results;
+    const results = data.results || [];
+    const panelSize = election.panel_size || 5;
+
+    const topResults = results.slice(0, panelSize);
+    const otherResults = results.slice(panelSize);
 
     app.innerHTML = `
       ${renderHeader()}
       <div class="card">
         <h2>${election.title} - Official Results</h2>
-        <p>Status: ${election.status}</p>
+        <p>Status: <strong style="text-transform: capitalize;">${election.status}</strong></p>
       </div>
+
       <div class="card">
-        <h3>Vote Tally</h3>
+        <h3>Top Results (Winners)</h3>
+        <p class="text-sm text-muted mb-4">Displaying the top ${panelSize} candidates based on total votes.</p>
         <table style="width:100%; text-align:left; border-collapse:collapse;">
-          <tr style="border-bottom: 2px solid var(--border);">
-            <th style="padding:0.5rem;">Candidate</th>
-            <th style="padding:0.5rem;">Votes</th>
-          </tr>
-          ${results.map((r: any) => `
-            <tr style="border-bottom: 1px solid var(--border);">
-              <td style="padding:0.5rem;">${r.name}</td>
-              <td style="padding:0.5rem;"><strong>${r.votes}</strong></td>
+          <thead>
+            <tr style="border-bottom: 2px solid var(--border);">
+              <th style="padding:0.75rem;">Rank</th>
+              <th style="padding:0.75rem;">Candidate</th>
+              <th style="padding:0.75rem; text-align:right;">Votes</th>
             </tr>
-          `).join('')}
+          </thead>
+          <tbody>
+            ${topResults.map((r: any, idx: number) => `
+              <tr style="border-bottom: 1px solid var(--border); background: ${idx < panelSize ? '#fdfdfd' : 'transparent'};">
+                <td style="padding:0.75rem; width: 50px;">#${idx + 1}</td>
+                <td style="padding:0.75rem;"><strong>${r.name}</strong></td>
+                <td style="padding:0.75rem; text-align:right;">${r.votes}</td>
+              </tr>
+            `).join('')}
+          </tbody>
         </table>
       </div>
-      <button onclick="navigate('/')">Back Home</button>
-      <button style="background:var(--text-muted); margin-left:1rem;" onclick="navigate('/audit/${electionId}')">View Audit Log</button>
+
+      ${otherResults.length > 0 ? `
+        <div id="other-results-container" style="display:none; margin-top: -1rem;">
+          <div class="card">
+            <h3>Other Candidates</h3>
+            <table style="width:100%; text-align:left; border-collapse:collapse;">
+              <tbody>
+                ${otherResults.map((r: any, idx: number) => `
+                  <tr style="border-bottom: 1px solid var(--border);">
+                    <td style="padding:0.75rem; width: 50px;">#${panelSize + idx + 1}</td>
+                    <td style="padding:0.75rem;">${r.name}</td>
+                    <td style="padding:0.75rem; text-align:right;">${r.votes}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div style="text-align:center; margin-bottom: 2rem;">
+          <button id="btn-load-more" onclick="showOtherResults()">Load More Candidates (+${otherResults.length})</button>
+        </div>
+      ` : ''}
+
+      <div class="flex gap-4" style="margin-top:2rem;">
+        <button onclick="navigate('/')">Back Home</button>
+        <button style="background:var(--text-muted);" onclick="navigate('/audit/${electionId}')">View Audit Log</button>
+      </div>
     `;
+
+    (window as any).showOtherResults = () => {
+      document.getElementById('other-results-container')!.style.display = 'block';
+      document.getElementById('btn-load-more')!.style.display = 'none';
+    };
   } catch (e: any) {
     app.innerHTML = `<div class="error card">${e.message}</div><button onclick="navigate('/')">Back Home</button>`;
   }

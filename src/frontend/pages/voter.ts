@@ -1,28 +1,39 @@
 import { apiFetch, setToken, formatDateIST, renderHeader } from '../utils/api';
 import { router } from '../router';
 
-export function renderVoterLogin(params: string[]) {
+export async function renderVoterLogin(params: string[]) {
   const electionId = params[0];
   const app = document.getElementById('app')!;
+  app.innerHTML = `<div>Loading...</div>`;
 
-  app.innerHTML = `
-    ${renderHeader()}
-    <div class="card" style="max-width: 400px; margin: 0 auto 4rem auto;">
-      <h2>Voter Login</h2>
-      <p class="text-muted text-sm">Enter your email address to receive a verification code and cast your vote.</p>
-      <div id="login-error" class="error"></div>
-      <div id="login-step-1">
-        <label>Email Address</label>
-        <input type="email" id="voter-email" placeholder="voter@example.com" />
-        <button onclick="requestVoterOTP('${electionId}')">Send OTP</button>
+  try {
+    const { election } = await apiFetch(`/elections/${electionId}/public`);
+    if (election.status === 'closed' || election.status === 'finalized') {
+      router.navigate(`/results/${electionId}`);
+      return;
+    }
+
+    app.innerHTML = `
+      ${renderHeader()}
+      <div class="card" style="max-width: 400px; margin: 0 auto 4rem auto;">
+        <h2>Voter Login</h2>
+        <p class="text-muted text-sm">Enter your email address to receive a verification code and cast your vote.</p>
+        <div id="login-error" class="error"></div>
+        <div id="login-step-1">
+          <label>Email Address</label>
+          <input type="email" id="voter-email" placeholder="voter@example.com" />
+          <button onclick="requestVoterOTP('${electionId}')">Send OTP</button>
+        </div>
+        <div id="login-step-2" style="display:none;">
+          <label>Verification Code</label>
+          <input type="text" id="voter-otp" placeholder="123456" />
+          <button onclick="verifyVoterOTP('${electionId}')">Login & Vote</button>
+        </div>
       </div>
-      <div id="login-step-2" style="display:none;">
-        <label>Verification Code</label>
-        <input type="text" id="voter-otp" placeholder="123456" />
-        <button onclick="verifyVoterOTP('${electionId}')">Login & Vote</button>
-      </div>
-    </div>
-  `;
+    `;
+  } catch (e: any) {
+    app.innerHTML = `<div class="error card">${e.message}</div>`;
+  }
 
   (window as any).requestVoterOTP = async (id: string) => {
     const email = (document.getElementById('voter-email') as HTMLInputElement).value;
