@@ -96,11 +96,15 @@ export async function renderAdminDashboard() {
     (window as any).createElection = async () => {
       const title = (document.getElementById('new-election-title') as HTMLInputElement).value;
       if (!title) return;
-      await apiFetch('/elections', {
+      const res = await apiFetch('/elections', {
         method: 'POST',
         body: JSON.stringify({ title })
       });
-      renderAdminDashboard();
+      if (res.election && res.election.id) {
+        router.navigate(`/admin/elections/${res.election.id}`);
+      } else {
+        renderAdminDashboard();
+      }
     };
 
   } catch (e: any) {
