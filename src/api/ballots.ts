@@ -75,10 +75,8 @@ ballotsRouter.post('/ballots', requireVoter, async (req, env, ctx) => {
   const emailHtml = `
     <h2>Vote Confirmation</h2>
     <p>Thank you for participating in <strong>${election.title}</strong>.</p>
-    <p>Your vote has been successfully cast for the following candidates:</p>
-    <ul>
-      ${selectedCandidateNames.map(name => `<li>${name}</li>`).join('')}
-    </ul>
+    <p>Your vote has been successfully cast. To protect your privacy, your specific selections are not included in this email.</p>
+    <p>You can view, download, or copy your full receipt (including your choices) on the election website confirmation page that is currently open in your browser.</p>
     <hr />
     <p><strong>Ballot Hash:</strong> ${ballotHash}</p>
     <p><strong>Timestamp:</strong> ${timestamp}</p>
@@ -87,7 +85,16 @@ ballotsRouter.post('/ballots', requireVoter, async (req, env, ctx) => {
 
   ctx.waitUntil(sendEmail(env, email, `Voting Confirmation: ${election.title}`, emailHtml));
 
-  return json({ success: true, receipt: { ballotId, ballotHash, timestamp, previousHash } });
+  return json({ 
+    success: true, 
+    receipt: { 
+      ballotId, 
+      ballotHash, 
+      timestamp, 
+      previousHash,
+      selections: selectedCandidateNames
+    } 
+  });
 });
 
 // GET /api/elections/:id/results - Public once finalized

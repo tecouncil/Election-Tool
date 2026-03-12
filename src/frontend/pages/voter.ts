@@ -171,15 +171,36 @@ export function renderConfirmation(params: string[]) {
       <h2 class="success">Vote Cast Successfully</h2>
       <p>Thank you for participating.</p>
       
-      <div style="text-align:left; background:#f3f4f6; padding:1rem; border-radius:8px; margin-top:2rem; word-break:break-all; font-family:monospace; font-size:0.875rem;">
-        <strong>Your Ballot Hash (Save this for verification):</strong><br/>
+      <div id="receipt-details" style="text-align:left; background:#f3f4f6; padding:1rem; border-radius:8px; margin-top:2rem; word-break:break-all; font-family:monospace; font-size:0.875rem;">
+        <strong>Your Selections:</strong><br/>
+        <ul style="padding-left:1.5rem; margin:0.5rem 0;">
+          ${(receipt.selections || []).map((name: string) => `<li>${name}</li>`).join('')}
+        </ul>
+        <br/>
+        <strong>Ballot Hash (Save this for verification):</strong><br/>
         ${receipt.ballotHash}
         <br/><br/>
         <strong>Timestamp:</strong><br/>
         ${formatDateIST(receipt.timestamp)}
       </div>
 
-      <button style="margin-top:2rem;" onclick="navigate('/')">Return Home</button>
+      <div class="mt-4 flex gap-2 justify-center" style="display:flex; gap:0.5rem; justify-content:center; margin-top:1.5rem;">
+        <button onclick="copyReceipt('${electionId}')">Copy Full Receipt</button>
+        <button style="background:var(--text-muted)" onclick="navigate('/')">Return Home</button>
+      </div>
+
+      <p class="text-sm text-muted mt-4" style="max-width: 500px; margin-left:auto; margin-right:auto;">
+        <strong>Privacy Note:</strong> To ensure your vote remains truly private, your choices were <u>not</u> included in your confirmation email (it only contains the Ballot Hash). Please copy or save this screen if you need a permanent record of your selections.
+      </p>
     </div>
   `;
+
+  (window as any).copyReceipt = (id: string) => {
+    const details = document.getElementById('receipt-details')!.innerText;
+    navigator.clipboard.writeText(details).then(() => {
+      alert('Receipt copied to clipboard!');
+    }).catch(() => {
+      alert('Failed to copy receipt.');
+    });
+  };
 }
