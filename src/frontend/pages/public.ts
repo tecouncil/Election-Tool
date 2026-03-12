@@ -1,4 +1,4 @@
-import { apiFetch, renderHeader } from '../utils/api';
+import { apiFetch, renderHeader, formatDateIST } from '../utils/api';
 import { router } from '../router';
 
 export async function renderResults(params: string[]) {
@@ -60,7 +60,7 @@ export async function renderAuditLog(params: string[]) {
         <div style="max-height: 500px; overflow-y:auto; font-family:monospace; font-size: 0.8rem; background:#111827; color:#10b981; padding: 1rem; border-radius: 4px;">
           ${logs.map((L: any) => `
             <div style="margin-bottom: 1rem; border-bottom: 1px dashed #374151; padding-bottom: 0.5rem;">
-              <span style="color:#60a5fa">${new Date(L.timestamp).toISOString()}</span> 
+              <span style="color:#60a5fa">${formatDateIST(L.timestamp)}</span> 
               <span style="color:#f59e0b">[${L.action}]</span>
               <br/>
               <span style="color:#f3f4f6">${L.details ? L.details : ''}</span>
@@ -105,7 +105,7 @@ export function renderVerify() {
         <div class="success" style="padding: 1rem; background: #ecfdf5; border-radius: 4px; border: 1px solid var(--success);">
           <h3>Valid Ballot Found ✓</h3>
           <p><strong>Election ID:</strong> ${ballot.election_id}</p>
-          <p><strong>Cast Timestamp:</strong> ${new Date(ballot.timestamp).toLocaleString()}</p>
+          <p><strong>Cast Timestamp:</strong> ${formatDateIST(ballot.timestamp)}</p>
           <p style="word-break:break-all;"><strong>Previous Link:</strong> <br/>${ballot.previous_hash}</p>
         </div>
       `;

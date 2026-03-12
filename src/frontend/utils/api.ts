@@ -35,8 +35,24 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}): Pro
 
 export function formatDateIST(dateInput: string | Date | null | undefined): string {
   if (!dateInput) return '-';
-  const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
+  let date: Date;
+  if (typeof dateInput === 'string') {
+    // SQLite's CURRENT_TIMESTAMP results in 'YYYY-MM-DD HH:MM:SS'.
+    // JavaScript Date needs 'T' and 'Z' for reliable UTC parsing.
+    let isoStr = dateInput;
+    if (isoStr.includes(' ') && !isoStr.includes('T')) {
+      isoStr = isoStr.replace(' ', 'T');
+    }
+    if (!isoStr.endsWith('Z') && !isoStr.includes('+')) {
+      isoStr += 'Z';
+    }
+    date = new Date(isoStr);
+  } else {
+    date = dateInput;
+  }
+  
   if (isNaN(date.getTime())) return '-';
+  
   return new Intl.DateTimeFormat('en-IN', {
     timeZone: 'Asia/Kolkata',
     year: 'numeric',

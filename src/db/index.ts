@@ -46,20 +46,21 @@ export class DBWrapper {
     ballotId: string,
     ballotHash: string,
     previousHash: string,
-    candidateIds: string[]
+    candidateIds: string[],
+    timestamp: string
   ): Promise<boolean> {
     const batch = [];
 
     // 1. Insert participation
     batch.push(
-      this.db.prepare('INSERT INTO voter_participation (email, election_id) VALUES (?, ?)')
-        .bind(email, electionId)
+      this.db.prepare('INSERT INTO voter_participation (email, election_id, voted_at) VALUES (?, ?, ?)')
+        .bind(email, electionId, timestamp)
     );
 
     // 2. Insert ballot
     batch.push(
-      this.db.prepare('INSERT INTO ballots (id, election_id, ballot_hash, previous_hash) VALUES (?, ?, ?, ?)')
-        .bind(ballotId, electionId, ballotHash, previousHash)
+      this.db.prepare('INSERT INTO ballots (id, election_id, ballot_hash, previous_hash, timestamp) VALUES (?, ?, ?, ?, ?)')
+        .bind(ballotId, electionId, ballotHash, previousHash, timestamp)
     );
 
     // 3. Insert selections

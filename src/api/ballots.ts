@@ -61,7 +61,7 @@ ballotsRouter.post('/ballots', requireVoter, async (req, env, ctx) => {
 
   const ballotId = crypto.randomUUID();
 
-  const success = await db.submitVote(email, election.id, ballotId, ballotHash, previousHash, selections);
+  const success = await db.submitVote(email, election.id, ballotId, ballotHash, previousHash, selections, timestamp);
   
   if (!success) {
     return error(500, 'Failed to submit ballot');
