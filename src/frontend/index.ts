@@ -10,9 +10,9 @@ router.add('/', () => {
   if (app) app.innerHTML = `
     ${renderHeader()}
     <div class="animate-fade-in" style="max-width: 900px; margin: 0 auto; padding: 2rem 1rem;">
-      <div class="card text-center" style="padding: 4rem 2rem; border-bottom: 4px solid var(--primary); background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.05), transparent);">
-        <h1 style="font-size: 3.5rem; margin-bottom: 1rem; letter-spacing: -0.02em;">TEC Election Portal</h1>
-        <p class="text-muted" style="font-size: 1.25rem; max-width: 700px; margin: 0 auto 2.5rem auto;">Building a sustainable community of technology entrepreneurs. A secure and cryptographically verifiable platform for the <strong>Technology Entrepreneurs’ Council</strong>.</p>
+      <div class="hero-card">
+        <h1 class="hero-title">TEC Election Portal</h1>
+        <p class="hero-description">Building a sustainable community of technology entrepreneurs. A secure and cryptographically verifiable platform for the <strong>Technology Entrepreneurs’ Council</strong>.</p>
         
         <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
           <button style="padding: 1rem 2.5rem; font-size: 1.1rem; font-weight: 600;" onclick="navigate('/verify')">
