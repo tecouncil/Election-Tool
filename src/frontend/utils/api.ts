@@ -92,9 +92,16 @@ export function formatLocalDatetime(dateInput: string | Date | null | undefined)
 }
 
 export function renderHeader() {
+  const isAdmin = location.pathname.startsWith('/admin') && getToken();
   return `
-    <header class="header" onclick="navigate('/')">
-      <img src="/assets/logo.png" alt="TEC EC Logo" class="logo" />
-    </header>
+    <nav class="header-nav">
+      <div class="logo-container" onclick="navigate('/')">
+        <img src="/assets/logo.png" alt="TEC Logo" class="logo-img" />
+      </div>
+      <div class="flex gap-4 items-center">
+        ${isAdmin ? `<button class="secondary" onclick="navigate('/admin')" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Admin Dashboard</button>` : ''}
+        <button class="secondary" onclick="navigate('/verify')" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Verify Vote</button>
+      </div>
+    </nav>
   `;
 }
