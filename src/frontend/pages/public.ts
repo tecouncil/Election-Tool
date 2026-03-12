@@ -67,6 +67,19 @@ export async function renderResults(params: string[]) {
         </div>
       ` : ''}
 
+      <div class="card">
+        <h3>Voter Participation</h3>
+        <p class="mb-2">Total Voters: <strong>${data.voterCount || 0}</strong></p>
+        <div style="max-height: 200px; overflow-y: auto; background: #f9fafb; border: 1px solid var(--border); border-radius: 4px; padding: 0.75rem;">
+          <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.875rem; color: #4b5563;">
+            ${(data.participation || []).map((email: string) => `
+              <li style="padding: 0.25rem 0; border-bottom: 1px solid #edf2f7; last-child { border-bottom: none; }">${email}</li>
+            `).join('')}
+            ${(!data.participation || data.participation.length === 0) ? '<li style="color:var(--text-muted)">No voters recorded.</li>' : ''}
+          </ul>
+        </div>
+      </div>
+
       <div class="flex gap-4" style="margin-top:2rem;">
         <button onclick="navigate('/')">Back Home</button>
         <button style="background:var(--text-muted);" onclick="navigate('/audit/${electionId}')">View Audit Log</button>

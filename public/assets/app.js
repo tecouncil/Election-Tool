@@ -1,8 +1,8 @@
-"use strict";(()=>{var x=(i,e)=>()=>(i&&(e=i(i=0)),e);var j=(i,e)=>()=>(e||i((e={exports:{}}).exports,e),e.exports);function q(){return localStorage.getItem("tec_token")}function $(i){localStorage.setItem("tec_token",i)}function S(){localStorage.removeItem("tec_token")}async function d(i,e={}){let t=q(),n={"Content-Type":"application/json",...e.headers||{}};t&&(n.Authorization=`Bearer ${t}`);let a=await fetch(`${F}${i}`,{...e,headers:n}),o=await a.json().catch(()=>({}));if(!a.ok)throw new Error(o.error||"API request failed");return o}function b(i){if(!i)return"-";let e;if(typeof i=="string"){let t=i;t.includes(" ")&&!t.includes("T")&&(t=t.replace(" ","T")),!t.endsWith("Z")&&!t.includes("+")&&(t+="Z"),e=new Date(t)}else e=i;return isNaN(e.getTime())?"-":new Intl.DateTimeFormat("en-IN",{timeZone:"Asia/Kolkata",year:"numeric",month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:!0}).format(e)}function E(i){if(!i)return"";let e=typeof i=="string"?new Date(i):i;if(isNaN(e.getTime()))return"";let t={timeZone:"Asia/Kolkata",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:!1},a=new Intl.DateTimeFormat("en-CA",t).formatToParts(e),o=m=>a.find(r=>r.type===m)?.value;return`${o("year")}-${o("month")}-${o("day")}T${o("hour")}:${o("minute")}`}function p(){return`
+"use strict";(()=>{var x=(i,e)=>()=>(i&&(e=i(i=0)),e);var j=(i,e)=>()=>(e||i((e={exports:{}}).exports,e),e.exports);function q(){return localStorage.getItem("tec_token")}function $(i){localStorage.setItem("tec_token",i)}function S(){localStorage.removeItem("tec_token")}async function d(i,e={}){let n=q(),t={"Content-Type":"application/json",...e.headers||{}};n&&(t.Authorization=`Bearer ${n}`);let a=await fetch(`${F}${i}`,{...e,headers:t}),o=await a.json().catch(()=>({}));if(!a.ok)throw new Error(o.error||"API request failed");return o}function h(i){if(!i)return"-";let e;if(typeof i=="string"){let n=i;n.includes(" ")&&!n.includes("T")&&(n=n.replace(" ","T")),!n.endsWith("Z")&&!n.includes("+")&&(n+="Z"),e=new Date(n)}else e=i;return isNaN(e.getTime())?"-":new Intl.DateTimeFormat("en-IN",{timeZone:"Asia/Kolkata",year:"numeric",month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:!0}).format(e)}function E(i){if(!i)return"";let e=typeof i=="string"?new Date(i):i;if(isNaN(e.getTime()))return"";let n={timeZone:"Asia/Kolkata",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:!1},a=new Intl.DateTimeFormat("en-CA",n).formatToParts(e),o=m=>a.find(r=>r.type===m)?.value;return`${o("year")}-${o("month")}-${o("day")}T${o("hour")}:${o("minute")}`}function p(){return`
     <header class="header" onclick="navigate('/')">
       <img src="/assets/logo.png" alt="TEC EC Logo" class="logo" />
     </header>
-  `}var F,f=x(()=>{"use strict";F="/api"});var k,l,w=x(()=>{"use strict";f();k=class{routes=[];constructor(){window.addEventListener("popstate",()=>this.route())}add(e,t){let n=e.replace(/:[a-zA-Z]+/g,"([^/]+)"),a=new RegExp(`^${n}$`);this.routes.push({path:a,handler:t})}navigate(e){window.history.pushState({},"",e),this.route()}route(){let e=window.location.pathname,t=document.getElementById("app");if(t){for(let n of this.routes){let a=e.match(n.path);if(a){let o=a.slice(1);t.innerHTML="Loading...",n.handler(o);return}}t.innerHTML='<h1>404 Not Found</h1><button onclick="window.history.back()">Go Back</button>'}}},l=new k;window.navigate=i=>l.navigate(i);window.logout=()=>{S(),l.navigate("/")}});function H(){let i=document.getElementById("app");i.innerHTML=`
+  `}var F,f=x(()=>{"use strict";F="/api"});var k,l,w=x(()=>{"use strict";f();k=class{routes=[];constructor(){window.addEventListener("popstate",()=>this.route())}add(e,n){let t=e.replace(/:[a-zA-Z]+/g,"([^/]+)"),a=new RegExp(`^${t}$`);this.routes.push({path:a,handler:n})}navigate(e){window.history.pushState({},"",e),this.route()}route(){let e=window.location.pathname,n=document.getElementById("app");if(n){for(let t of this.routes){let a=e.match(t.path);if(a){let o=a.slice(1);n.innerHTML="Loading...",t.handler(o);return}}n.innerHTML='<h1>404 Not Found</h1><button onclick="window.history.back()">Go Back</button>'}}},l=new k;window.navigate=i=>l.navigate(i);window.logout=()=>{S(),l.navigate("/")}});function H(){let i=document.getElementById("app");i.innerHTML=`
     ${p()}
     <div class="card" style="max-width: 400px; margin: 0 auto 4rem auto;">
       <h2>Admin Login</h2>
@@ -18,7 +18,7 @@
         <button onclick="verifyAdminOTP()">Verify & Login</button>
       </div>
     </div>
-  `,window.requestAdminOTP=async()=>{let e=document.getElementById("admin-email").value;try{await d("/auth/otp/request",{method:"POST",body:JSON.stringify({email:e,isAdminLogin:!0})}),document.getElementById("login-step-1").style.display="none",document.getElementById("login-step-2").style.display="block",document.getElementById("login-error").innerText="OTP sent to email. Please check your inbox.",document.getElementById("login-error").className="success"}catch(t){document.getElementById("login-error").innerText=t.message,document.getElementById("login-error").className="error"}},window.verifyAdminOTP=async()=>{let e=document.getElementById("admin-email").value,t=document.getElementById("admin-otp").value;try{let n=await d("/auth/otp/verify",{method:"POST",body:JSON.stringify({email:e,code:t,isAdminLogin:!0})});$(n.token),l.navigate("/admin")}catch(n){document.getElementById("login-error").innerText=n.message,document.getElementById("login-error").className="error"}}}async function I(){let i=document.getElementById("app");i.innerHTML="<div>Loading...</div>";try{let t=(await d("/elections")).elections||[],n=t.map(a=>`
+  `,window.requestAdminOTP=async()=>{let e=document.getElementById("admin-email").value;try{await d("/auth/otp/request",{method:"POST",body:JSON.stringify({email:e,isAdminLogin:!0})}),document.getElementById("login-step-1").style.display="none",document.getElementById("login-step-2").style.display="block",document.getElementById("login-error").innerText="OTP sent to email. Please check your inbox.",document.getElementById("login-error").className="success"}catch(n){document.getElementById("login-error").innerText=n.message,document.getElementById("login-error").className="error"}},window.verifyAdminOTP=async()=>{let e=document.getElementById("admin-email").value,n=document.getElementById("admin-otp").value;try{let t=await d("/auth/otp/verify",{method:"POST",body:JSON.stringify({email:e,code:n,isAdminLogin:!0})});$(t.token),l.navigate("/admin")}catch(t){document.getElementById("login-error").innerText=t.message,document.getElementById("login-error").className="error"}}}async function I(){let i=document.getElementById("app");i.innerHTML="<div>Loading...</div>";try{let n=(await d("/elections")).elections||[],t=n.map(a=>`
       <div class="card flex justify-between items-center">
         <div>
           <h3>${a.title}</h3>
@@ -26,7 +26,7 @@
         </div>
         <button onclick="navigate('/admin/elections/${a.id}')">Manage</button>
       </div>
-    `).join("");t.length===0&&(n="<p>No elections found.</p>"),i.innerHTML=`
+    `).join("");n.length===0&&(t="<p>No elections found.</p>"),i.innerHTML=`
       ${p()}
       <div class="flex justify-between items-center mb-4">
         <h2>Admin Dashboard</h2>
@@ -38,9 +38,9 @@
         <button onclick="createElection()">Create</button>
       </div>
       <div>
-        ${n}
+        ${t}
       </div>
-    `,window.createElection=async()=>{let a=document.getElementById("new-election-title").value;if(!a)return;let o=await d("/elections",{method:"POST",body:JSON.stringify({title:a})});o.election&&o.election.id?l.navigate(`/admin/elections/${o.election.id}`):I()}}catch(e){e.message.includes("Unauthorized")||e.message.includes("Forbidden")?l.navigate("/admin/login"):i.innerHTML=`<div class="error">${e.message}</div>`}}async function h(i){let e=i[0],t=document.getElementById("app");t.innerHTML="<div>Loading...</div>";try{let[n,a,o,m]=await Promise.all([d(`/elections/${e}`),d(`/elections/${e}/candidates`),d(`/elections/${e}/participation`),d(`/elections/${e}/internal-results`)]),r=n.election,c=a.candidates,u=o.participation,g=m.results,v=r.status==="draft",T=window.location.origin+"/vote/"+r.id;t.innerHTML=`
+    `,window.createElection=async()=>{let a=document.getElementById("new-election-title").value;if(!a)return;let o=await d("/elections",{method:"POST",body:JSON.stringify({title:a})});o.election&&o.election.id?l.navigate(`/admin/elections/${o.election.id}`):I()}}catch(e){e.message.includes("Unauthorized")||e.message.includes("Forbidden")?l.navigate("/admin/login"):i.innerHTML=`<div class="error">${e.message}</div>`}}async function b(i){let e=i[0],n=document.getElementById("app");n.innerHTML="<div>Loading...</div>";try{let[t,a,o,m]=await Promise.all([d(`/elections/${e}`),d(`/elections/${e}/candidates`),d(`/elections/${e}/participation`),d(`/elections/${e}/internal-results`)]),r=t.election,c=a.candidates,u=o.participation,g=m.results,v=r.status==="draft",T=window.location.origin+"/vote/"+r.id;n.innerHTML=`
       ${p()}
       <button onclick="navigate('/admin')" style="background:var(--text-muted);margin-bottom:1rem;">&larr; Back to Dashboard</button>
       <div class="card">
@@ -132,7 +132,7 @@
               ${u.map(s=>`
                 <tr style="border-bottom: 1px solid #eee;">
                   <td style="padding: 0.5rem;">${s.email}</td>
-                  <td style="padding: 0.5rem; font-size: 0.8rem; color: #666;">${b(s.voted_at)}</td>
+                  <td style="padding: 0.5rem; font-size: 0.8rem; color: #666;">${h(s.voted_at)}</td>
                 </tr>
               `).join("")}
               ${u.length===0?'<tr><td colspan="2" style="padding: 1rem; text-align: center; color: #999;">No votes cast yet</td></tr>':""}
@@ -140,7 +140,7 @@
           </table>
         </div>
       </div>
-    `,window.copyShareLink=()=>{let s=document.getElementById("share-link");s.select(),s.setSelectionRange(0,99999),navigator.clipboard.writeText(s.value).then(()=>{alert("Copied to clipboard")}).catch(()=>{alert("Failed to copy")})},v&&(window.updateSettings=async s=>{let y=parseInt(document.getElementById("edit-panel").value,10),L=document.getElementById("edit-start").value,B=document.getElementById("edit-end").value,z=L?new Date(L+":00+05:30").toISOString():null,_=B?new Date(B+":00+05:30").toISOString():null;await d(`/elections/${s}`,{method:"PATCH",body:JSON.stringify({panel_size:y,voting_window_start:z,voting_window_end:_})}),h([s])},window.addCandidate=async s=>{let y=document.getElementById("new-candidate").value;y&&(await d(`/elections/${s}/candidates`,{method:"POST",body:JSON.stringify({name:y})}),h([s]))},window.removeCandidate=async(s,y)=>{await d(`/elections/${s}/candidates/${y}`,{method:"DELETE"}),h([s])},window.openElection=async s=>{confirm("Are you sure you want to open this election? No more changes to candidates can be made.")&&(await d(`/elections/${s}/open`,{method:"POST"}).catch(y=>alert(y.message)),h([s]))}),window.closeElection=async s=>{confirm("Close election? Voters will no longer be able to vote.")&&(await d(`/elections/${s}/close`,{method:"POST"}).catch(y=>alert(y.message)),h([s]))},window.finalizeElection=async s=>{confirm("Finalize election? Results will be made public.")&&(await d(`/elections/${s}/finalize`,{method:"POST"}).catch(y=>alert(y.message)),h([s]))}}catch(n){n.message.includes("Unauthorized")||n.message.includes("Forbidden")?l.navigate("/admin/login"):t.innerHTML=`<div class="error">${n.message}</div>`}}var M=x(()=>{"use strict";f();w()});async function O(i){let e=i[0],t=document.getElementById("app");t.innerHTML="<div>Loading...</div>";try{let{election:n}=await d(`/elections/${e}/public`);if(n.status==="closed"||n.status==="finalized"){l.navigate(`/results/${e}`);return}t.innerHTML=`
+    `,window.copyShareLink=()=>{let s=document.getElementById("share-link");s.select(),s.setSelectionRange(0,99999),navigator.clipboard.writeText(s.value).then(()=>{alert("Copied to clipboard")}).catch(()=>{alert("Failed to copy")})},v&&(window.updateSettings=async s=>{let y=parseInt(document.getElementById("edit-panel").value,10),L=document.getElementById("edit-start").value,B=document.getElementById("edit-end").value,z=L?new Date(L+":00+05:30").toISOString():null,_=B?new Date(B+":00+05:30").toISOString():null;await d(`/elections/${s}`,{method:"PATCH",body:JSON.stringify({panel_size:y,voting_window_start:z,voting_window_end:_})}),b([s])},window.addCandidate=async s=>{let y=document.getElementById("new-candidate").value;y&&(await d(`/elections/${s}/candidates`,{method:"POST",body:JSON.stringify({name:y})}),b([s]))},window.removeCandidate=async(s,y)=>{await d(`/elections/${s}/candidates/${y}`,{method:"DELETE"}),b([s])},window.openElection=async s=>{confirm("Are you sure you want to open this election? No more changes to candidates can be made.")&&(await d(`/elections/${s}/open`,{method:"POST"}).catch(y=>alert(y.message)),b([s]))}),window.closeElection=async s=>{confirm("Close election? Voters will no longer be able to vote.")&&(await d(`/elections/${s}/close`,{method:"POST"}).catch(y=>alert(y.message)),b([s]))},window.finalizeElection=async s=>{confirm("Finalize election? Results will be made public.")&&(await d(`/elections/${s}/finalize`,{method:"POST"}).catch(y=>alert(y.message)),b([s]))}}catch(t){t.message.includes("Unauthorized")||t.message.includes("Forbidden")?l.navigate("/admin/login"):n.innerHTML=`<div class="error">${t.message}</div>`}}var M=x(()=>{"use strict";f();w()});async function O(i){let e=i[0],n=document.getElementById("app");n.innerHTML="<div>Loading...</div>";try{let{election:t}=await d(`/elections/${e}/public`);if(t.status==="closed"||t.status==="finalized"){l.navigate(`/results/${e}`);return}n.innerHTML=`
       ${p()}
       <div class="card" style="max-width: 400px; margin: 0 auto 4rem auto;">
         <h2>Voter Login</h2>
@@ -157,7 +157,7 @@
           <button onclick="verifyVoterOTP('${e}')">Login & Vote</button>
         </div>
       </div>
-    `}catch(n){t.innerHTML=`<div class="error card">${n.message}</div>`}window.requestVoterOTP=async n=>{let a=document.getElementById("voter-email").value;try{await d("/auth/otp/request",{method:"POST",body:JSON.stringify({email:a,electionId:n})}),document.getElementById("login-step-1").style.display="none",document.getElementById("login-step-2").style.display="block",document.getElementById("login-error").innerText="OTP sent to email. Please check your inbox.",document.getElementById("login-error").className="success"}catch(o){document.getElementById("login-error").innerText=o.message,document.getElementById("login-error").className="error"}},window.verifyVoterOTP=async n=>{let a=document.getElementById("voter-email").value,o=document.getElementById("voter-otp").value;try{let m=await d("/auth/otp/verify",{method:"POST",body:JSON.stringify({email:a,code:o,electionId:n})});$(m.token),l.navigate(`/vote/${n}/ballot`)}catch(m){document.getElementById("login-error").innerText=m.message,document.getElementById("login-error").className="error"}}}async function P(i){let e=i[0],t=document.getElementById("app");t.innerHTML="<div>Loading Ballot...</div>";try{let n=await d(`/elections/${e}/public`),a=n.election,o=n.candidates,m=a.panel_size,r=[];t.innerHTML=`
+    `}catch(t){n.innerHTML=`<div class="error card">${t.message}</div>`}window.requestVoterOTP=async t=>{let a=document.getElementById("voter-email").value;try{await d("/auth/otp/request",{method:"POST",body:JSON.stringify({email:a,electionId:t})}),document.getElementById("login-step-1").style.display="none",document.getElementById("login-step-2").style.display="block",document.getElementById("login-error").innerText="OTP sent to email. Please check your inbox.",document.getElementById("login-error").className="success"}catch(o){document.getElementById("login-error").innerText=o.message,document.getElementById("login-error").className="error"}},window.verifyVoterOTP=async t=>{let a=document.getElementById("voter-email").value,o=document.getElementById("voter-otp").value;try{let m=await d("/auth/otp/verify",{method:"POST",body:JSON.stringify({email:a,code:o,electionId:t})});$(m.token),l.navigate(`/vote/${t}/ballot`)}catch(m){document.getElementById("login-error").innerText=m.message,document.getElementById("login-error").className="error"}}}async function P(i){let e=i[0],n=document.getElementById("app");n.innerHTML="<div>Loading Ballot...</div>";try{let t=await d(`/elections/${e}/public`),a=t.election,o=t.candidates,m=a.panel_size,r=[];n.innerHTML=`
       ${p()}
       <div class="card">
         <h2>${a.title} - Official Ballot</h2>
@@ -179,7 +179,7 @@
         <button id="submit-ballot" disabled onclick="submitBallot('${e}')">Cast Ballot</button>
         <div id="ballot-error" class="error mt-2"></div>
       </div>
-    `,window.toggleCandidate=c=>{let u=r.indexOf(c),g=document.getElementById(`candidate-${c}`),v=document.getElementById(`checkbox-${c}`);u>-1?(r.splice(u,1),g.classList.remove("selected"),v.checked=!1):r.length<m&&(r.push(c),g.classList.add("selected"),v.checked=!0),document.getElementById("selection-count").innerText=r.length.toString();let T=document.getElementById("submit-ballot");T.disabled=r.length!==m},window.submitBallot=async c=>{let u=document.getElementById("submit-ballot");u.disabled=!0,u.innerText="Submitting...";try{let g=await d(`/elections/${c}/ballots`,{method:"POST",body:JSON.stringify({selections:r})});localStorage.setItem(`receipt_${c}`,JSON.stringify(g.receipt)),l.navigate(`/vote/${c}/confirm`)}catch(g){document.getElementById("ballot-error").innerText=g.message,u.disabled=!1,u.innerText="Cast Ballot"}}}catch(n){n.message.includes("Unauthorized")?l.navigate(`/vote/${e}`):t.innerHTML=`<div class="error">${n.message}</div>`}}function C(i){let e=i[0],t=document.getElementById("app"),n=localStorage.getItem(`receipt_${e}`);if(!n){l.navigate("/");return}let a=JSON.parse(n);t.innerHTML=`
+    `,window.toggleCandidate=c=>{let u=r.indexOf(c),g=document.getElementById(`candidate-${c}`),v=document.getElementById(`checkbox-${c}`);u>-1?(r.splice(u,1),g.classList.remove("selected"),v.checked=!1):r.length<m&&(r.push(c),g.classList.add("selected"),v.checked=!0),document.getElementById("selection-count").innerText=r.length.toString();let T=document.getElementById("submit-ballot");T.disabled=r.length!==m},window.submitBallot=async c=>{let u=document.getElementById("submit-ballot");u.disabled=!0,u.innerText="Submitting...";try{let g=await d(`/elections/${c}/ballots`,{method:"POST",body:JSON.stringify({selections:r})});localStorage.setItem(`receipt_${c}`,JSON.stringify(g.receipt)),l.navigate(`/vote/${c}/confirm`)}catch(g){document.getElementById("ballot-error").innerText=g.message,u.disabled=!1,u.innerText="Cast Ballot"}}}catch(t){t.message.includes("Unauthorized")?l.navigate(`/vote/${e}`):n.innerHTML=`<div class="error">${t.message}</div>`}}function C(i){let e=i[0],n=document.getElementById("app"),t=localStorage.getItem(`receipt_${e}`);if(!t){l.navigate("/");return}let a=JSON.parse(t);n.innerHTML=`
     ${p()}
     <div class="card" style="text-align:center; max-width:600px; margin: 0 auto 4rem auto;">
       <h2 class="success">Vote Cast Successfully</h2>
@@ -195,7 +195,7 @@
         ${a.ballotHash}
         <br/><br/>
         <strong>Timestamp:</strong><br/>
-        ${b(a.timestamp)}
+        ${h(a.timestamp)}
       </div>
 
       <div class="mt-4 flex gap-2 justify-center" style="display:flex; gap:0.5rem; justify-content:center; margin-top:1.5rem;">
@@ -207,7 +207,7 @@
         <strong>Privacy Note:</strong> To ensure your vote remains truly private, your choices were <u>not</u> included in your confirmation email (it only contains the Ballot Hash). Please copy or save this screen if you need a permanent record of your selections.
       </p>
     </div>
-  `,window.copyReceipt=o=>{let m=document.getElementById("receipt-details").innerText;navigator.clipboard.writeText(m).then(()=>{alert("Receipt copied to clipboard!")}).catch(()=>{alert("Failed to copy receipt.")})}}var A=x(()=>{"use strict";f();w()});async function D(i){let e=i[0],t=document.getElementById("app");t.innerHTML="<div>Loading Results...</div>";try{let n=await d(`/elections/${e}/results`),a=n.election,o=n.results||[],m=a.panel_size||5,r=o.slice(0,m),c=o.slice(m);t.innerHTML=`
+  `,window.copyReceipt=o=>{let m=document.getElementById("receipt-details").innerText;navigator.clipboard.writeText(m).then(()=>{alert("Receipt copied to clipboard!")}).catch(()=>{alert("Failed to copy receipt.")})}}var A=x(()=>{"use strict";f();w()});async function N(i){let e=i[0],n=document.getElementById("app");n.innerHTML="<div>Loading Results...</div>";try{let t=await d(`/elections/${e}/results`),a=t.election,o=t.results||[],m=a.panel_size||5,r=o.slice(0,m),c=o.slice(m);n.innerHTML=`
       ${p()}
       <div class="card">
         <h2>${a.title} - Official Results</h2>
@@ -259,11 +259,24 @@
         </div>
       `:""}
 
+      <div class="card">
+        <h3>Voter Participation</h3>
+        <p class="mb-2">Total Voters: <strong>${t.voterCount||0}</strong></p>
+        <div style="max-height: 200px; overflow-y: auto; background: #f9fafb; border: 1px solid var(--border); border-radius: 4px; padding: 0.75rem;">
+          <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.875rem; color: #4b5563;">
+            ${(t.participation||[]).map(u=>`
+              <li style="padding: 0.25rem 0; border-bottom: 1px solid #edf2f7; last-child { border-bottom: none; }">${u}</li>
+            `).join("")}
+            ${!t.participation||t.participation.length===0?'<li style="color:var(--text-muted)">No voters recorded.</li>':""}
+          </ul>
+        </div>
+      </div>
+
       <div class="flex gap-4" style="margin-top:2rem;">
         <button onclick="navigate('/')">Back Home</button>
         <button style="background:var(--text-muted);" onclick="navigate('/audit/${e}')">View Audit Log</button>
       </div>
-    `,window.showOtherResults=()=>{document.getElementById("other-results-container").style.display="block",document.getElementById("btn-load-more").style.display="none"}}catch(n){t.innerHTML=`<div class="error card">${n.message}</div><button onclick="navigate('/')">Back Home</button>`}}async function N(i){let e=i[0],t=document.getElementById("app");t.innerHTML="<div>Loading Audit Log...</div>";try{let a=(await d(`/audit/${e}`)).logs||[];t.innerHTML=`
+    `,window.showOtherResults=()=>{document.getElementById("other-results-container").style.display="block",document.getElementById("btn-load-more").style.display="none"}}catch(t){n.innerHTML=`<div class="error card">${t.message}</div><button onclick="navigate('/')">Back Home</button>`}}async function V(i){let e=i[0],n=document.getElementById("app");n.innerHTML="<div>Loading Audit Log...</div>";try{let a=(await d(`/audit/${e}`)).logs||[];n.innerHTML=`
       ${p()}
       <div class="card">
         <div class="flex justify-between items-center mb-4">
@@ -274,7 +287,7 @@
         <div style="max-height: 500px; overflow-y:auto; font-family:monospace; font-size: 0.8rem; background:#111827; color:#10b981; padding: 1rem; border-radius: 4px;">
           ${a.map(o=>`
             <div style="margin-bottom: 1rem; border-bottom: 1px dashed #374151; padding-bottom: 0.5rem;">
-              <span style="color:#60a5fa">${b(o.timestamp)}</span> 
+              <span style="color:#60a5fa">${h(o.timestamp)}</span> 
               <span style="color:#f59e0b">[${o.action}]</span>
               <br/>
               <span style="color:#f3f4f6">${o.details?o.details:""}</span>
@@ -284,7 +297,7 @@
         </div>
       </div>
       <button onclick="navigate('/')">Back Home</button>
-    `}catch(n){t.innerHTML=`<div class="error card">${n.message}</div><button onclick="navigate('/')">Back Home</button>`}}function V(){let i=document.getElementById("app");i.innerHTML=`
+    `}catch(t){n.innerHTML=`<div class="error card">${t.message}</div><button onclick="navigate('/')">Back Home</button>`}}function D(){let i=document.getElementById("app");i.innerHTML=`
     ${p()}
     <div class="card" style="max-width: 600px; margin: 0 auto 4rem auto;">
       <h2>Verify Ballot</h2>
@@ -294,17 +307,17 @@
       <div id="verify-result" class="mt-4"></div>
     </div>
     <div style="text-align:center;"><button onclick="navigate('/')">Back Home</button></div>
-  `,window.verifyHash=async()=>{let e=document.getElementById("verify-hash").value.trim();if(!e)return;let t=document.getElementById("verify-result");t.innerHTML="Verifying...";try{let a=(await d(`/verify/${e}`)).ballot;t.innerHTML=`
+  `,window.verifyHash=async()=>{let e=document.getElementById("verify-hash").value.trim();if(!e)return;let n=document.getElementById("verify-result");n.innerHTML="Verifying...";try{let a=(await d(`/verify/${e}`)).ballot;n.innerHTML=`
         <div class="success" style="padding: 1rem; background: #ecfdf5; border-radius: 4px; border: 1px solid var(--success);">
           <h3>Valid Ballot Found \u2713</h3>
           <p><strong>Election ID:</strong> ${a.election_id}</p>
-          <p><strong>Cast Timestamp:</strong> ${b(a.timestamp)}</p>
+          <p><strong>Cast Timestamp:</strong> ${h(a.timestamp)}</p>
           <p style="word-break:break-all;"><strong>Previous Link:</strong> <br/>${a.previous_hash}</p>
         </div>
-      `}catch(n){t.innerHTML=`
+      `}catch(t){n.innerHTML=`
         <div class="error" style="padding: 1rem; background: #fef2f2; border-radius: 4px; border: 1px solid var(--danger);">
           <h3>Verification Failed \u2717</h3>
-          <p>${n.message}</p>
+          <p>${t.message}</p>
         </div>
       `}}}var R=x(()=>{"use strict";f()});var J=j(()=>{w();f();M();A();R();l.add("/",()=>{let i=document.getElementById("app");i&&(i.innerHTML=`
       ${p()}
@@ -316,4 +329,4 @@
         <button onclick="navigate('/admin/login')" style="background-color: var(--text-muted);">Admin Login</button>
       </div>
     </div>
-  `)});l.add("/admin/login",H);l.add("/admin",I);l.add("/admin/elections/:id",h);l.add("/vote/:id",O);l.add("/vote/:id/ballot",P);l.add("/vote/:id/confirm",C);l.add("/results/:id",D);l.add("/audit/:id",N);l.add("/verify",V);l.route()});J();})();
+  `)});l.add("/admin/login",H);l.add("/admin",I);l.add("/admin/elections/:id",b);l.add("/vote/:id",O);l.add("/vote/:id/ballot",P);l.add("/vote/:id/confirm",C);l.add("/results/:id",N);l.add("/audit/:id",V);l.add("/verify",D);l.route()});J();})();

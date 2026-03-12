@@ -126,5 +126,9 @@ ballotsRouter.get('/results', async (req, env) => {
     votes: resultsMap[c.id] || 0
   })).sort((a, b) => b.votes - a.votes);
 
-  return json({ election, results });
+  // Fetch participation emails
+  const participationRes = await env.DB.prepare('SELECT email FROM voter_participation WHERE election_id = ? ORDER BY voted_at ASC').bind(election.id).all();
+  const participation = (participationRes.results || []).map(r => r.email);
+
+  return json({ election, results, participation, voterCount: participation.length });
 });
