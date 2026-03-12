@@ -9,14 +9,14 @@ export const candidatesRouter = Router<AuthenticatedRequest, [Env, ExecutionCont
 candidatesRouter.all('/*', requireAdmin);
 
 // GET /api/elections/:id/candidates
-candidatesRouter.get('/', async (req, env) => {
+candidatesRouter.get('/', async (req, env, ctx) => {
   const db = new DBWrapper(env.DB);
   const candidates = await db.getCandidates(req.params.id);
   return json({ candidates });
 });
 
 // POST /api/elections/:id/candidates
-candidatesRouter.post('/', async (req, env) => {
+candidatesRouter.post('/', async (req, env, ctx) => {
   const db = new DBWrapper(env.DB);
   const election = await db.getElection(req.params.id);
   if (!election) return error(404, 'Election not found');
@@ -44,7 +44,7 @@ candidatesRouter.post('/', async (req, env) => {
 });
 
 // DELETE /api/elections/:id/candidates/:candidateId
-candidatesRouter.delete('/:candidateId', async (req, env) => {
+candidatesRouter.delete('/:candidateId', async (req, env, ctx) => {
   const db = new DBWrapper(env.DB);
   const election = await db.getElection(req.params.id);
   if (!election) return error(404, 'Election not found');

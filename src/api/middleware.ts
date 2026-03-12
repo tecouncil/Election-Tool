@@ -9,7 +9,7 @@ export type AuthenticatedRequest = IRequest & {
   }
 };
 
-export const requireAuth = async (req: AuthenticatedRequest, env: Env) => {
+export const requireAuth = async (req: AuthenticatedRequest, env: Env, ctx: ExecutionContext) => {
   const authHeader = req.headers.get('Authorization');
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return error(401, 'Unauthorized');
@@ -25,8 +25,8 @@ export const requireAuth = async (req: AuthenticatedRequest, env: Env) => {
   req.session = JSON.parse(sessionStr);
 };
 
-export const requireAdmin = async (req: AuthenticatedRequest, env: Env) => {
-  const authRes = await requireAuth(req, env);
+export const requireAdmin = async (req: AuthenticatedRequest, env: Env, ctx: ExecutionContext) => {
+  const authRes = await requireAuth(req, env, ctx);
   if (authRes) return authRes; // if errorResponse was returned
 
   if (!req.session || req.session.role !== 'admin') {
@@ -34,8 +34,8 @@ export const requireAdmin = async (req: AuthenticatedRequest, env: Env) => {
   }
 };
 
-export const requireVoter = async (req: AuthenticatedRequest, env: Env) => {
-  const authRes = await requireAuth(req, env);
+export const requireVoter = async (req: AuthenticatedRequest, env: Env, ctx: ExecutionContext) => {
+  const authRes = await requireAuth(req, env, ctx);
   if (authRes) return authRes;
 
   if (!req.session || req.session.role !== 'voter') {

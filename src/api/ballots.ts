@@ -3,12 +3,13 @@ import { Env } from '../index';
 import { AuthenticatedRequest, requireVoter } from './middleware';
 import { DBWrapper } from '../db';
 import { computeBallotHash } from '../utils/crypto';
+import { sendEmail } from '../utils/email';
 
 export const ballotsRouter = Router<AuthenticatedRequest, [Env, ExecutionContext]>({ base: '/api/elections/:id' });
 
 // POST /api/elections/:id/ballots
 // Submits a ballot
-ballotsRouter.post('/ballots', requireVoter, async (req, env) => {
+ballotsRouter.post('/ballots', requireVoter, async (req, env, ctx) => {
   const db = new DBWrapper(env.DB);
   const election = await db.getElection(req.params.id);
   if (!election) return error(404, 'Election not found');
@@ -57,6 +58,26 @@ ballotsRouter.post('/ballots', requireVoter, async (req, env) => {
   if (!success) {
     return error(500, 'Failed to submit ballot');
   }
+
+  // Send confirmation email to voter (non-blocking)
+  const selectedCandidateNames = selections.map(id => 
+    candidates.find(c => c.id === id)?.name || id
+  );
+
+  const emailHtml = `
+    <h2>Vote Confirmation</h2>
+    <p>Thank you for participating in <strong>${election.title}</strong>.</p>
+    <p>Your vote has been successfully cast for the following candidates:</p>
+    <ul>
+      ${selectedCandidateNames.map(name => `<li>${name}</li>`).join('')}
+    </ul>
+    <hr />
+    <p><strong>Ballot Hash:</strong> ${ballotHash}</p>
+    <p><strong>Timestamp:</strong> ${timestamp}</p>
+    <p><em>Save this information for your records. The ballot hash allows you to verify that your vote is included in the final tally without revealing your identity.</em></p>
+  `;
+
+  ctx.waitUntil(sendEmail(env, email, `Voting Confirmation: ${election.title}`, emailHtml));
 
   return json({ success: true, receipt: { ballotId, ballotHash, timestamp, previousHash } });
 });

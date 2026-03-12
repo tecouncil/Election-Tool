@@ -4,7 +4,7 @@ import { Env } from '../index';
 export const verifyRouter = Router<IRequest, [Env, ExecutionContext]>({ base: '/api/verify' });
 
 // GET /api/verify/:ballotHash
-verifyRouter.get('/:ballotHash', async (req, env) => {
+verifyRouter.get('/:ballotHash', async (req, env, ctx) => {
   // Find a ballot by hash
   const res = await env.DB.prepare('SELECT id, election_id, previous_hash, timestamp FROM ballots WHERE ballot_hash = ?').bind(req.params.ballotHash).first();
   

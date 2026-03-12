@@ -7,7 +7,7 @@ import { Election } from '../db/models';
 export const electionsRouter = Router<AuthenticatedRequest, [Env, ExecutionContext]>({ base: '/api/elections' });
 
 // Public endpoint for voters to get election details
-electionsRouter.get('/:id/public', async (req, env) => {
+electionsRouter.get('/:id/public', async (req, env, ctx) => {
   const db = new DBWrapper(env.DB);
   const election = await db.getElection(req.params.id);
   if (!election) return error(404, 'Election not found');
@@ -22,14 +22,14 @@ electionsRouter.get('/:id/public', async (req, env) => {
 electionsRouter.all('/*', requireAdmin);
 
 // GET /api/elections
-electionsRouter.get('/', async (req, env) => {
+electionsRouter.get('/', async (req, env, ctx) => {
   const db = new DBWrapper(env.DB);
   const elections = await db.getElections();
   return json({ elections });
 });
 
 // POST /api/elections
-electionsRouter.post('/', async (req, env) => {
+electionsRouter.post('/', async (req, env, ctx) => {
   const db = new DBWrapper(env.DB);
   const body: any = await req.json().catch(() => ({}));
   
@@ -61,7 +61,7 @@ electionsRouter.post('/', async (req, env) => {
 });
 
 // GET /api/elections/:id
-electionsRouter.get('/:id', async (req, env) => {
+electionsRouter.get('/:id', async (req, env, ctx) => {
   const db = new DBWrapper(env.DB);
   const election = await db.getElection(req.params.id);
   if (!election) return error(404, 'Election not found');
@@ -69,7 +69,7 @@ electionsRouter.get('/:id', async (req, env) => {
 });
 
 // PATCH /api/elections/:id
-electionsRouter.patch('/:id', async (req, env) => {
+electionsRouter.patch('/:id', async (req, env, ctx) => {
   const db = new DBWrapper(env.DB);
   const election = await db.getElection(req.params.id);
   if (!election) return error(404, 'Election not found');
@@ -93,7 +93,7 @@ electionsRouter.patch('/:id', async (req, env) => {
 });
 
 // POST /api/elections/:id/open
-electionsRouter.post('/:id/open', async (req, env) => {
+electionsRouter.post('/:id/open', async (req, env, ctx) => {
   const db = new DBWrapper(env.DB);
   const election = await db.getElection(req.params.id);
   if (!election) return error(404, 'Election not found');
@@ -112,7 +112,7 @@ electionsRouter.post('/:id/open', async (req, env) => {
 });
 
 // POST /api/elections/:id/close
-electionsRouter.post('/:id/close', async (req, env) => {
+electionsRouter.post('/:id/close', async (req, env, ctx) => {
   const db = new DBWrapper(env.DB);
   const election = await db.getElection(req.params.id);
   if (!election) return error(404, 'Election not found');
@@ -125,7 +125,7 @@ electionsRouter.post('/:id/close', async (req, env) => {
 });
 
 // POST /api/elections/:id/finalize
-electionsRouter.post('/:id/finalize', async (req, env) => {
+electionsRouter.post('/:id/finalize', async (req, env, ctx) => {
   const db = new DBWrapper(env.DB);
   const election = await db.getElection(req.params.id);
   if (!election) return error(404, 'Election not found');
@@ -138,7 +138,7 @@ electionsRouter.post('/:id/finalize', async (req, env) => {
 });
 
 // GET /api/elections/:id/internal-results - Admin only, available anytime
-electionsRouter.get('/:id/internal-results', async (req, env) => {
+electionsRouter.get('/:id/internal-results', async (req, env, ctx) => {
   const db = new DBWrapper(env.DB);
   const election = await db.getElection(req.params.id);
   if (!election) return error(404, 'Election not found');

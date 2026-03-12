@@ -5,7 +5,7 @@ import { DBWrapper } from '../db';
 export const auditRouter = Router<IRequest, [Env, ExecutionContext]>({ base: '/api/audit' });
 
 // GET /api/audit/:electionId - Public audit log
-auditRouter.get('/:electionId', async (req, env) => {
+auditRouter.get('/:electionId', async (req, env, ctx) => {
   const db = new DBWrapper(env.DB);
   // Optional: Verify election exists
   const election = await db.getElection(req.params.electionId);
