@@ -120,7 +120,7 @@ export async function renderAdminElectionEdit(params: string[]) {
       apiFetch(`/elections/${electionId}`),
       apiFetch(`/elections/${electionId}/candidates`),
       apiFetch(`/elections/${electionId}/participation`),
-      apiFetch(`/elections/${electionId}/results`)
+      apiFetch(`/elections/${electionId}/internal-results`)
     ]);
 
     const election = electionData.election;
@@ -160,7 +160,19 @@ export async function renderAdminElectionEdit(params: string[]) {
         <h3>Settings</h3>
         <label>Panel Size (Number of candidate choices required)</label>
         <input type="number" id="edit-panel" value="${election.panel_size}" ${!isDraft ? 'disabled' : ''} />
-        ${isDraft ? `<button onclick="updateSettings('${election.id}')">Save Settings</button>` : ''}
+        
+        <div class="flex gap-4 mt-2">
+          <div style="flex:1">
+            <label>Voting Window Start</label>
+            <input type="datetime-local" id="edit-start" value="${election.voting_window_start ? election.voting_window_start.slice(0, 16) : ''}" ${!isDraft ? 'disabled' : ''} />
+          </div>
+          <div style="flex:1">
+            <label>Voting Window End (Deadline)</label>
+            <input type="datetime-local" id="edit-end" value="${election.voting_window_end ? election.voting_window_end.slice(0, 16) : ''}" ${!isDraft ? 'disabled' : ''} />
+          </div>
+        </div>
+
+        ${isDraft ? `<button class="mt-4" onclick="updateSettings('${election.id}')">Save Settings</button>` : ''}
       </div>
 
       <div class="flex gap-4" style="display:flex; gap: 1rem; align-items: flex-start;">
@@ -235,7 +247,17 @@ export async function renderAdminElectionEdit(params: string[]) {
     if (isDraft) {
       (window as any).updateSettings = async (id: string) => {
         const pSize = parseInt((document.getElementById('edit-panel') as HTMLInputElement).value, 10);
-        await apiFetch(`/elections/${id}`, { method: 'PATCH', body: JSON.stringify({ panel_size: pSize }) });
+        const start = (document.getElementById('edit-start') as HTMLInputElement).value;
+        const end = (document.getElementById('edit-end') as HTMLInputElement).value;
+        
+        await apiFetch(`/elections/${id}`, { 
+          method: 'PATCH', 
+          body: JSON.stringify({ 
+            panel_size: pSize,
+            voting_window_start: start || null,
+            voting_window_end: end || null
+          }) 
+        });
         renderAdminElectionEdit([id]);
       };
       (window as any).addCandidate = async (id: string) => {

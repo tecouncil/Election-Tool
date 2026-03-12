@@ -137,8 +137,8 @@ electionsRouter.post('/:id/finalize', async (req, env) => {
   return json({ success: true, message: 'Election finalized' });
 });
 
-// GET /api/elections/:id/results - Admin only, available anytime
-electionsRouter.get('/:id/results', async (req, env) => {
+// GET /api/elections/:id/internal-results - Admin only, available anytime
+electionsRouter.get('/:id/internal-results', async (req, env) => {
   const db = new DBWrapper(env.DB);
   const election = await db.getElection(req.params.id);
   if (!election) return error(404, 'Election not found');
