@@ -20,7 +20,7 @@ class_name = "RateLimiter"
 # KV Namespace for OTPs and sessions
 [[kv_namespaces]]
 binding = "KV"
-id = "8f1415e18d6444989ed371aee7f4c12a1"
+id = "8f1415e18d6444989ed371aeef4c12a1"
 
 # D1 Database for persistent data
 [[d1_databases]]
