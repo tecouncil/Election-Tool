@@ -137,6 +137,36 @@ electionsRouter.post('/:id/finalize', async (req, env) => {
   return json({ success: true, message: 'Election finalized' });
 });
 
+// GET /api/elections/:id/results - Admin only, available anytime
+electionsRouter.get('/:id/results', async (req, env) => {
+  const db = new DBWrapper(env.DB);
+  const election = await db.getElection(req.params.id);
+  if (!election) return error(404, 'Election not found');
+
+  const candidates = await db.getCandidates(election.id);
+  const query = `
+    SELECT candidate_id, COUNT(*) as vote_count 
+    FROM ballot_selections bs 
+    JOIN ballots b ON b.id = bs.ballot_id 
+    WHERE b.election_id = ? 
+    GROUP BY candidate_id
+  `;
+  const res = await env.DB.prepare(query).bind(election.id).all();
+  
+  const resultsMap: Record<string, number> = {};
+  for (const row of res.results) {
+    resultsMap[row.candidate_id as string] = row.vote_count as number;
+  }
+
+  const results = candidates.map(c => ({
+    id: c.id,
+    name: c.name,
+    votes: resultsMap[c.id] || 0
+  })).sort((a, b) => b.votes - a.votes);
+
+  return json({ election, results });
+});
+
 // GET /api/elections/:id/participation
 electionsRouter.get('/:id/participation', async (req, env) => {
   const db = new DBWrapper(env.DB);

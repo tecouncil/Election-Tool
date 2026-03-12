@@ -116,13 +116,17 @@ export async function renderAdminElectionEdit(params: string[]) {
   app.innerHTML = `<div>Loading...</div>`;
 
   try {
-    const [electionData, candidatesData] = await Promise.all([
+    const [electionData, candidatesData, participationData, resultsData] = await Promise.all([
       apiFetch(`/elections/${electionId}`),
-      apiFetch(`/elections/${electionId}/candidates`)
+      apiFetch(`/elections/${electionId}/candidates`),
+      apiFetch(`/elections/${electionId}/participation`),
+      apiFetch(`/elections/${electionId}/results`)
     ]);
 
     const election = electionData.election;
     const candidates = candidatesData.candidates;
+    const participation = participationData.participation;
+    const results = resultsData.results;
 
     const isDraft = election.status === 'draft';
     const shareLink = window.location.origin + '/vote/' + election.id;
@@ -159,7 +163,7 @@ export async function renderAdminElectionEdit(params: string[]) {
         ${isDraft ? `<button onclick="updateSettings('${election.id}')">Save Settings</button>` : ''}
       </div>
 
-      <div class="flex gap-4" style="display:flex; gap: 1rem;">
+      <div class="flex gap-4" style="display:flex; gap: 1rem; align-items: flex-start;">
         <div class="card" style="flex:1;">
           <h3>Candidates (${candidates.length})</h3>
           ${isDraft ? `
@@ -176,6 +180,42 @@ export async function renderAdminElectionEdit(params: string[]) {
               </li>
             `).join('')}
           </ul>
+        </div>
+
+        <div class="card" style="flex:1;">
+          <h3>Live Results</h3>
+          <ul style="padding-left:0;list-style:none;">
+            ${results.map((r: any) => `
+              <li class="candidate-item justify-between">
+                <span>${r.name}</span>
+                <span class="badge">${r.votes} votes</span>
+              </li>
+            `).join('')}
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Voter Participation (${participation.length} total)</h3>
+        <p class="text-muted text-sm" style="margin-bottom: 1rem;">The following users have successfully cast their ballots.</p>
+        <div style="max-height: 200px; overflow-y: auto; background: #fafafa; border-radius: 4px; padding: 0.5rem;">
+          <table style="width: 100%; text-align: left; border-collapse: collapse;">
+            <thead>
+              <tr style="border-bottom: 2px solid #eee;">
+                <th style="padding: 0.5rem;">Voter Email</th>
+                <th style="padding: 0.5rem;">Timestamp</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${participation.map((p: any) => `
+                <tr style="border-bottom: 1px solid #eee;">
+                  <td style="padding: 0.5rem;">${p.email}</td>
+                  <td style="padding: 0.5rem; font-size: 0.8rem; color: #666;">${new Date(p.voted_at).toLocaleString()}</td>
+                </tr>
+              `).join('')}
+              ${participation.length === 0 ? '<tr><td colspan="2" style="padding: 1rem; text-align: center; color: #999;">No votes cast yet</td></tr>' : ''}
+            </tbody>
+          </table>
         </div>
       </div>
     `;
